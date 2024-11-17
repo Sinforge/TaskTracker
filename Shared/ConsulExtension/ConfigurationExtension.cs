@@ -7,6 +7,16 @@ public static class ConfigurationExtension
 {
     public static ServiceConfig GetServiceConfig(this IConfiguration configuration)
     {
-        return configuration.GetValue<ServiceConfig>("ServiceConfig")!;
+        var serviceSection = configuration.GetSection("ServiceConfig")!;
+
+        return new ServiceConfig
+            {
+                Id = serviceSection.GetValue<string>("Id")!,
+                Name = serviceSection.GetValue<string>("Name")!,
+                Url = serviceSection.GetValue<string>("Url")!,
+                Port = serviceSection.GetValue<int>("Port"),
+                ConsulUrl = serviceSection.GetValue<Uri>("ConsulUrl")!,
+                HealthCheckEndpoint = serviceSection.GetValue<string>("HealthCheckEndpoint")!
+            };
     }
 }

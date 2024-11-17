@@ -25,7 +25,7 @@ public class ConsulDiscoveryHostedService(
             {
                 DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(5),
                 Interval = TimeSpan.FromSeconds(15),
-                HTTP = $"http://{config.Url}:{config.Port}/api/values/{config.HealthCheckEndpoint}",
+                HTTP = $"http://{config.Url}:{config.Port}/{config.HealthCheckEndpoint}",
                 Timeout = TimeSpan.FromSeconds(5)
             }
         };
