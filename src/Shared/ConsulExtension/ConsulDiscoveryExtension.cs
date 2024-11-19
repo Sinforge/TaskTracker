@@ -15,7 +15,7 @@ public static class ConsulDiscoveryExtension
         });
 
         return services.AddSingleton(serviceConfig)
-            .AddSingleton<IConsulClient, ConsulClient>(_ => consulClient)
+            .AddTransient<IConsulClient, ConsulClient>(_ => consulClient)
             .AddSingleton<IHostedService, ConsulDiscoveryHostedService>();
     }
 }

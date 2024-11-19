@@ -1,4 +1,5 @@
 using ConsulExtension;
+using GrpcTaskService;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
