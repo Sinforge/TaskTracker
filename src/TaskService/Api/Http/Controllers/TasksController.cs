@@ -1,4 +1,6 @@
 using ConsulExtension.Services.Interfaces;
+using Grpc.Net.Client;
+using GrpcNotificationService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,14 +29,15 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         await dbContext.Tasks.AddAsync(newTask, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        /*var serviceUrl = await serviceDiscovery.GetServiceUrlAsync("NotificationService");
+        var serviceUrl = await serviceDiscovery.GetServiceUrlAsync("NotificationService");
         var channel = GrpcChannel.ForAddress(serviceUrl);
+        Console.WriteLine(serviceUrl);
         var client = new NotificationService.NotificationServiceClient(channel);
         await client.SendNotificationAsync(new()
         {
             Message = $"Task with Id {newTask.Id} created",
             UserId = newTask.CreatorId.ToString()
-        });*/
+        });
         
         return Ok(new AddTaskResponse(newTask.Id));
     }
@@ -52,14 +55,14 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         dbContext.Tasks.Update(task);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        /*var serviceUrl = await serviceDiscovery.GetServiceUrlAsync("NotificationService");
+        var serviceUrl = await serviceDiscovery.GetServiceUrlAsync("NotificationService");
         var channel = GrpcChannel.ForAddress(serviceUrl);
         var client = new NotificationService.NotificationServiceClient(channel);
         await client.SendNotificationAsync(new()
         {
             Message = $"Task with Id {task.Id} updated",
             UserId = task.CreatorId.ToString()
-        });*/
+        });
         return Ok();
     }
 
@@ -73,7 +76,6 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         dbContext.Tasks.Remove(task);
         await dbContext.SaveChangesAsync(cancellationToken);
         
-        /*
         var serviceUrl = await serviceDiscovery.GetServiceUrlAsync("NotificationService");
         var channel = GrpcChannel.ForAddress(serviceUrl);
         var client = new NotificationService.NotificationServiceClient(channel);
@@ -82,7 +84,6 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
             Message = $"Task with Id {id} created",
             UserId = id.ToString()
         });
-        */
 
         return Ok();
     }

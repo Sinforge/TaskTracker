@@ -1,6 +1,5 @@
 using AuthService.Settings;
 using ConsulExtension;
-
 using Microsoft.EntityFrameworkCore;
 using TaskService.Data;
 

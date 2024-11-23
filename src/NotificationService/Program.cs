@@ -1,15 +1,40 @@
+using AuthService.Settings;
 using ConsulExtension;
+using Microsoft.EntityFrameworkCore;
+using NotificationService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//var serviceConfig = builder.Configuration.GetServiceConfig();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-//builder.Services.AddConsulDiscovery(serviceConfig);
-
+builder.Services    
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen()
+    .AddConsulClient(builder.Configuration);
+    
+var appSettings = new AppSettings();
+builder.Configuration.AddConsulConfiguration(["NotificationService", "JwtSecretKey"]).Build().Bind(appSettings);
+builder.Services.Configure<AppSettings>(builder.Configuration)
+    .AddConsulDiscovery(config =>
+    {
+        config.Id = appSettings.InstanceConfig.Id.ToString();
+        config.Url = appSettings.InstanceConfig.Url;
+        config.Port = appSettings.InstanceConfig.Port;
+        config.Name = appSettings.Name;
+        config.HealthCheckEndpoint = appSettings.HealthCheckEndpoint;
+    })
+    .AddDbContext<NotificationServiceDbContext>(options =>
+    {
+        var connection = builder.Configuration.GetConnectionString("DefaultConnection")!;
+        options.UseNpgsql(connection);
+    })
+    .AddControllers();
+builder.Services.AddGrpc();
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<NotificationServiceDbContext>();
+    dbContext.Database.Migrate();
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,17 +42,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/health", () => "Ok");
-
+app.MapControllers();
+app.MapGrpcService<NotificationService.Api.Grpc.NotificationService>();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
