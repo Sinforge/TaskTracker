@@ -21,11 +21,11 @@ public class ConsulDiscoveryHostedService(
             Name = config.Name,
             Address = config.Url,
             Port = config.Port,
-            Check = new AgentServiceCheck()
+            Check = new AgentServiceCheck
             {
                 DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(5),
                 Interval = TimeSpan.FromSeconds(15),
-                HTTP = $"http://{config.Url}:{config.Port}/{config.HealthCheckEndpoint}",
+                HTTP = $"{config.Url}:{config.Port}/{config.HealthCheckEndpoint}",
                 Timeout = TimeSpan.FromSeconds(5)
             }
         };

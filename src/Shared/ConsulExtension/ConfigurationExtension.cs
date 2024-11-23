@@ -1,22 +1,17 @@
-using ConsulExtension.Models;
 using Microsoft.Extensions.Configuration;
+using Winton.Extensions.Configuration.Consul;
 
 namespace ConsulExtension;
 
 public static class ConfigurationExtension
 {
-    public static ServiceConfig GetServiceConfig(this IConfiguration configuration)
+    public static IConfigurationManager AddConsulConfiguration(this IConfigurationManager configuration, string[] sections)
     {
-        var serviceSection = configuration.GetSection("ServiceConfig")!;
-
-        return new ServiceConfig
-            {
-                Id = serviceSection.GetValue<string>("Id")!,
-                Name = serviceSection.GetValue<string>("Name")!,
-                Url = serviceSection.GetValue<string>("Url")!,
-                Port = serviceSection.GetValue<int>("Port"),
-                ConsulUrl = serviceSection.GetValue<Uri>("ConsulUrl")!,
-                HealthCheckEndpoint = serviceSection.GetValue<string>("HealthCheckEndpoint")!
-            };
+        foreach (var section in sections)
+        {
+            configuration.AddConsul(section);
+        }
+        
+        return configuration;
     }
 }

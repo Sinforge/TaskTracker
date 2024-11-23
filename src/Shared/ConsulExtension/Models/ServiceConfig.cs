@@ -2,10 +2,11 @@ namespace ConsulExtension.Models;
 
 public sealed class ServiceConfig
 {
-    public required string Id { get; init; }
-    public required string Name { get; init; }
-    public required string Url { get; init; }
-    public required int Port {get; init; }
-    public required Uri ConsulUrl { get; init; }
-    public required string HealthCheckEndpoint { get; init; }
+    public ServiceConfig(Action<ServiceConfig> configOverride) =>configOverride.Invoke(this);
+    
+    public string Id { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string Url { get; set; } = null!;
+    public int Port { get; set; }
+    public string HealthCheckEndpoint { get; set; } = null!;
 }

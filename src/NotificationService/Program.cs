@@ -2,10 +2,10 @@ using ConsulExtension;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var serviceConfig = builder.Configuration.GetServiceConfig();
+//var serviceConfig = builder.Configuration.GetServiceConfig();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddConsulDiscovery(serviceConfig);
+//builder.Services.AddConsulDiscovery(serviceConfig);
 
 var app = builder.Build();
 
