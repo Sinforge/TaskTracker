@@ -1,0 +1,141 @@
+version: '3.9'
+
+services:
+  consul:
+    image: consul:1.15.4
+    ports:
+      - "8500:8500"
+    environment:
+      CONSUL_BIND_INTERFACE: "eth0"
+    networks:
+      - app-network
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    
+  auth-service: 
+    build:
+      dockerfile: ./AuthService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: "http://*:5093;https://*:50930"
+      ConsulUrl: "http://consul:8500"
+      InstanceConfig__Id: "b4f566d1-1234-4a1b-bc3d-c567e8dba7f8"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Url: "http://*:5093"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Protocols: "Http1"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Url: "http://*:50930"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols: "Http2"
+      InstanceConfig__Url: "auth-service"
+      InstanceConfig__Http1Port: "5093"
+      InstanceConfig__GrpcPort: "50930"
+    ports:
+      - "5093:5093"
+      - "50930:50930"
+    depends_on: 
+      - consul
+      - auth-db
+    networks:
+      - auth-network
+      - app-network
+  
+  task-service:
+    build:
+      dockerfile: ./TaskService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: "http://*:5234;https://*:52340"
+      ConsulUrl: "http://consul:8500"
+      InstanceConfig__Id: "b5f566d1-1234-4a1b-bc3d-c567e8dba7f8"
+      InstanceConfig__Url: "task-service"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Url: "http://*:5234"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Protocols: "Http1"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Url: "http://*:52340"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols: "Http2"
+      InstanceConfig__Http1Port: "5234"
+      InstanceConfig__GrpcPort: "52340"
+    ports:
+      - "5234:5234"
+      - "52340:52340"
+    depends_on: 
+      - consul
+      - task-db
+    networks: 
+      - task-network
+      - app-network
+
+  notification-service:
+    build:
+      dockerfile: ./NotificationService/Dockerfile
+    
+    environment:
+      ConsulUrl: "http://consul:8500"
+      InstanceConfig__Id: "b6f566d1-1234-4a1b-bc3d-c567e8dba7f8"
+      InstanceConfig__Url: "notification-service"
+      InstanceConfig__Http1Port: "5029"
+      InstanceConfig__GrpcPort: "50290"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Url: "http://*:5029"
+      ASPNETCORE_Kestrel__Endpoints__Http1__Protocols: "Http1"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Url: "http://*:50290"
+      ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols: "Http2"  
+    ports:
+       - "5029:5029"
+       - "50290:50290"
+    depends_on: 
+      - consul
+      - notification-db
+
+    networks: 
+      - notification-network
+      - app-network
+  
+  auth-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: auth_db
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - auth-network
+  
+  task-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: task_user
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: task_db
+    volumes:
+      - task-db-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - task-network
+  
+  notification-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: notification_db
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    networks:
+      - notification-network
+    ports:
+      - "5435:5432"
+
+volumes:
+  auth-db-data:
+  task-db-data:
+  notification-db-data:
+
+networks:
+  app-network:
+    driver: bridge
+  auth-network:
+    driver: bridge
+  notification-network:
+    driver: bridge
+  task-network:
+    driver: bridge
+  
+    

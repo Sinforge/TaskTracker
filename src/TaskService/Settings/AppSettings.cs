@@ -1,3 +1,5 @@
+using TaskService.Settings;
+
 namespace AuthService.Settings;
 
 public class AppSettings

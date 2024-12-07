@@ -1,6 +1,8 @@
 using AuthService.Settings;
 using ConsulExtension;
+using ConsulExtension.Extensions;
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Api.Grpc;
 using NotificationService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +11,6 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddConsulClient(builder.Configuration);
-    
 var appSettings = new AppSettings();
 builder.Configuration.AddConsulConfiguration(["NotificationService", "JwtSecretKey"]).Build().Bind(appSettings);
 builder.Services.Configure<AppSettings>(builder.Configuration)
@@ -17,7 +18,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration)
     {
         config.Id = appSettings.InstanceConfig.Id.ToString();
         config.Url = appSettings.InstanceConfig.Url;
-        config.Port = appSettings.InstanceConfig.Port;
+        config.Http1Port = appSettings.InstanceConfig.Http1Port;
+        config.GrpcPort = appSettings.InstanceConfig.GrpcPort;
         config.Name = appSettings.Name;
         config.HealthCheckEndpoint = appSettings.HealthCheckEndpoint;
     })
@@ -28,6 +30,7 @@ builder.Services.Configure<AppSettings>(builder.Configuration)
     })
     .AddControllers();
 builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -35,13 +38,13 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<NotificationServiceDbContext>();
     dbContext.Database.Migrate();
 }
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger(); 
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.MapControllers();
 app.MapGrpcService<NotificationService.Api.Grpc.NotificationService>();
+app.MapGrpcReflectionService();
+app.MapGrpcService<CustomHealthCheckService>();
+app.MapControllers();
 app.Run();

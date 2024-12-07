@@ -1,3 +1,5 @@
+using NotificationService.Settings;
+
 namespace AuthService.Settings;
 
 public class AppSettings
