@@ -1,6 +1,7 @@
 using ConsulExtension.Services.Interfaces;
 using Grpc.Net.Client;
 using GrpcNotificationService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskService.Api.Http.Contracts.AddTask;
@@ -14,6 +15,7 @@ namespace TaskService.Api.Http.Controllers;
 [Route("api/[controller]")]
 public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDiscovery serviceDiscovery) : ControllerBase
 {
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> AddAsync([FromBody] AddTaskRequest request, CancellationToken cancellationToken)
     {
@@ -41,6 +43,7 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         return Ok(new AddTaskResponse(newTask.Id));
     }
 
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> UpdateAsync([FromBody] UpdateTaskRequest request, CancellationToken cancellationToken)
     {
@@ -65,6 +68,7 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         return Ok();
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> RemoveAsync([FromRoute] Guid id, CancellationToken cancellationToken)
     {
@@ -87,6 +91,7 @@ public class TasksController(TaskServiceDbContext dbContext, IConsulServiceDisco
         return Ok();
     }
 
+    [Authorize]
     [HttpGet]
     public IActionResult GetAllAsync()
     {

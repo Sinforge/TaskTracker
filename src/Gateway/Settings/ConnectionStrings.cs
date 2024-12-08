@@ -1,4 +1,4 @@
-namespace NotificationService.Settings;
+namespace Gateway.Settings;
 
 public class ConnectionStrings
 {

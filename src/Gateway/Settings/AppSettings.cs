@@ -1,4 +1,4 @@
-namespace AuthService.Settings;
+namespace Gateway.Settings;
 
 public class AppSettings
 {

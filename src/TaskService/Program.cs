@@ -1,9 +1,13 @@
+using System.Text;
 using AuthService.Settings;
 using ConsulExtension;
 using ConsulExtension.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TaskService.Api.Http.Grpc;
 using TaskService.Data;
+using TaskService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,26 @@ builder.Services
 var appSettings = new AppSettings();
 builder.Services.AddGrpc();
 builder.Configuration.AddConsulConfiguration(["TaskService", "JwtSecretKey"]).Build().Bind(appSettings);
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(option =>
+    {
+        option.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(appSettings.Audience.SecretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = appSettings.Audience.Iss,
+            ValidateAudience = true,
+            ValidAudience = appSettings.Audience.Aud,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            RequireExpirationTime = true,
+        };
+    });
 builder.Services.Configure<AppSettings>(builder.Configuration)
     .AddConsulDiscovery(config =>
     {
@@ -46,7 +70,8 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapGrpcReflectionService();
 app.MapGrpcService<CustomHealthCheckService>();
 app.UseHttpsRedirection();

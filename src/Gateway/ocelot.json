@@ -1,0 +1,55 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "ServiceName": "AuthService",
+      "LoadBalancer": "RoundRobin",
+      "UpstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "ServiceDiscoveryProvider": {
+        "Tags": ["http"]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "ServiceName": "NotificationService",
+      "LoadBalancer": "RoundRobin",
+      "UpstreamPathTemplate": "/api/notif/{everything}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "ServiceDiscoveryProvider": {
+        "Tags": ["http"]
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [ "Bearer" ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "ServiceName": "TaskService",
+      "LoadBalancer": "RoundRobin",
+      "UpstreamPathTemplate": "/api/main/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "ServiceDiscoveryProvider": {
+        "Tags": ["http"] 
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [ "Bearer" ]
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Host": "consul",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Ocelot": "Debug"
+    }
+  }
+}

@@ -1,8 +1,12 @@
 using AuthService.Data;
 using AuthService.Requests;
 using AuthService.Utils;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Octokit;
+using Octokit.Internal;
+using User = AuthService.Data.User;
 
 namespace AuthService.Controllers;
 
@@ -43,13 +47,13 @@ public class UsersController(AuthServiceDbContext dbContext, IConfiguration conf
         if (user is null)
             return BadRequest();
 
-        var hasCorrectPassword = PasswordUtils.VerifyPassword(request.Password, user.PasswordHash);
+        var hasCorrectPassword = PasswordUtils.VerifyPassword(request.Password, user.PasswordHash!);
         if (!hasCorrectPassword)
             return BadRequest();
         
         var token = JwtTokenUtils.GenerateToken(user.Id, GetSecretKey());
         return Ok(new { access_token = token });
     }
-    
+
     
 }

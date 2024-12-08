@@ -1,9 +1,11 @@
-using AuthService.Settings;
-using ConsulExtension;
+using System.Text;
 using ConsulExtension.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NotificationService.Api.Grpc;
 using NotificationService.Data;
+using NotificationService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,26 @@ builder.Services
     .AddConsulClient(builder.Configuration);
 var appSettings = new AppSettings();
 builder.Configuration.AddConsulConfiguration(["NotificationService", "JwtSecretKey"]).Build().Bind(appSettings);
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(option =>
+    {
+        option.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(appSettings.Audience.SecretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = appSettings.Audience.Iss,
+            ValidateAudience = true,
+            ValidAudience = appSettings.Audience.Aud,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            RequireExpirationTime = true,
+        };
+    });
 builder.Services.Configure<AppSettings>(builder.Configuration)
     .AddConsulDiscovery(config =>
     {
@@ -43,6 +65,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapGrpcService<NotificationService.Api.Grpc.NotificationService>();
 app.MapGrpcReflectionService();
 app.MapGrpcService<CustomHealthCheckService>();

@@ -8,14 +8,18 @@ public class User
     public required Guid Id { get; set; }
     
     [MaxLength(100)]
-    public required string Login { get; set; }
+    public string? Login { get; set; }
     
     [MaxLength(30)]
-    public required string Name { get; set; }
+    public string? Name { get; set; }
     
     [MaxLength(30)]
-    public required string Surname { get; set; }
+    public string? Surname { get; set; }
     
     [MaxLength(64)]
-    public required string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
+    
+    public int? GitHubId { get; set; }
+    
+    
 }

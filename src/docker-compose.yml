@@ -1,6 +1,19 @@
 version: '3.9'
 
 services:
+  
+  gateway:
+    build:
+      dockerfile: ./Gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      ASPNETCORE_URLS: "http://*:8000"
+      ConsulUrl: "http://consul:8500"
+    depends_on:
+      - consul
+    networks:
+      - app-network
   consul:
     image: consul:1.15.4
     ports:
